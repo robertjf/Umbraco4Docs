@@ -139,6 +139,32 @@ One important configuration option that **must** be set when using a centralized
 
 ###Lucene/Examine configuration
 
+As of Umbraco 7.2.2 each indexer and corresponding searcher has a new optional config setting:
+
+useTempStorage="Sync"
+
+the value can be either: "Sync" or "LocalOnly"
+
+Specifying "Sync" will mean that the index that is stored in ~/App_Data/TEMP/ExamineIndexes/[IndexName] will get restored to the asp.net process's local temp folder (i.e. C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\vs\7a807fb2\7d5e4942\App_Data\TEMP\ExamineIndexes[IndexName] )
+
+Then the searchers will all operate from the local storage which is great if you are running IIS from a shared storage file system as this reduces latency issues. Each writer will then write to both the local storage and the real file system to keep them in sync. On startup the temp local index will be restored from the main storage.
+
+When the value is "LocalOnly", this means that the index will only ever exist in local temp storage. The index will operate the same as by default but it will be stored in local temp storage. When the /bin folder changes or global.asax changes, this local folder gets cleared out which means the index will be rebuild when that happens.
+
+It is an absolute requirement that both the indexer and it's corresponding searcher have the same values. So if useTempStorage is being used, then both indexer and searcher needs to be the same, example:
+
+      <add name="InternalIndexer" type="UmbracoExamine.UmbracoContentIndexer, UmbracoExamine"
+           supportUnpublished="true"
+           supportProtected="true" 
+           useTempStorage="Sync"
+           analyzer="Lucene.Net.Analysis.WhitespaceAnalyzer, Lucene.Net"/>
+
+      <add name="InternalSearcher" type="UmbracoExamine.UmbracoExamineSearcher, UmbracoExamine"
+           analyzer="Lucene.Net.Analysis.WhitespaceAnalyzer, Lucene.Net"
+           useTempStorage="Sync"/>
+
+####Pre-Umbraco 7.2.2 Configuration
+
 _**Lucene/Examine will have issues with this configuration!**_. Even though you've specified a single server as the administration server, when this server makes distributed calls to the other servers in your load balanced environment, each of those servers will attempt to write to their index files. Since these index files are shared between all servers you will get file locking issues. 
 
 Therefore you need to setup Examine to store index files on the local machine. This can be done with this custom library:
