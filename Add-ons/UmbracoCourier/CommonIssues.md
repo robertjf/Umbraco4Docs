@@ -56,7 +56,7 @@ put courier in debug mode in /config/courier.config and restart application, it 
 *Solution:* Uninstall courier, and reinstall 2.7.8.14 from nightly:
 http://nightly.umbraco.org/UmbracoCourier/2.7.8/nightly%20builds/
 
-###Latest changes arent deployet / courier cant detect changes
+###Latest changes arent deployed / courier can't detect changes
 *Caused by:* When changes are made, courier stores a serialized copy in its cache folder, in some cases, it cannot update
 the filem due to permissions or locks
 
